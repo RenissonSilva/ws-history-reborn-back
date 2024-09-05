@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Alert {
+  alert_id   Int      @id @default(autoincrement())
+  name       String
+  item_id    Int
+  refinement Int?
+  store_name String
+  price      Int
+  date       DateTime @db.Date
+
+  @@map("alerts")
+}
+
+model Item {
+  id         Int    @id @default(autoincrement())
+  name       String
+  item_id    Int
+  refinement Int?
+  price      Int
+
+  @@map("items")
+}
+
+model ErrorEmail {
+  id   Int      @id @default(autoincrement())
+  date DateTime @db.Date
+
+  @@map("error_emails")
+}
