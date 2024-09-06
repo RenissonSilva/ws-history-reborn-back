@@ -14,18 +14,43 @@ app.get('/items', async (req, res) => {
     res.json(items);
 });
 
-// Rota para atualizar os itens
+app.post('/items', async (req, res) => {
+  const item = req.body;
+  const{ item_id, name, refinement, price } = item;
+  console.log('post item_id', item_id)
+  const itemExists = await prisma.item.count({
+    where: {
+      item_id: parseInt(item_id, 10),
+      refinement: parseInt(refinement, 10),
+    }
+  })
+
+  if(itemExists){
+    return res.status(500).json('O item já está na lista');
+  }
+
+  try {
+    const createdItems = await prisma.item.create({
+      data: { 
+          item_id: parseInt(item_id, 10),
+          name,
+          refinement: parseInt(refinement, 10),
+          price: parseInt(price, 10)
+      },
+    });
+
+    res.json(createdItems);
+
+  } catch (error) {
+    console.error('Erro ao criar item:', error);
+    return res.status(500).json('Erro ao criar item');
+  }
+});
+
 app.put('/items', async (req, res) => {
-    console.log('put items')
     const itemsToUpdate = req.body;
   
-    if (!Array.isArray(itemsToUpdate)) {
-      return res.status(400).json({ error: 'A requisição deve ser um array de itens' });
-    }
-    console.log('itemsToUpdate', itemsToUpdate)
-  
     try {
-      // Atualize cada item na base de dados
       const updatedItems = await Promise.all(
         itemsToUpdate.map(async (item) => {
           const { id, refinement, price } = item;
@@ -44,10 +69,31 @@ app.put('/items', async (req, res) => {
   
       res.json(updatedItems);
     } catch (error) {
-      console.error('Erro ao atualizar itens:', error);
-      res.status(500).json({ error: 'Erro ao atualizar itens' });
+      return res.status(500).json('Erro ao atualizar item');
     }
   });
+
+  app.delete('/items/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const item = await prisma.item.findUnique({
+        where: { id: parseInt(id) }
+      });
+
+      if (!item) {
+        return res.status(404).json({ error: 'Item não encontrado.' });
+      }
+
+      await prisma.item.delete({
+        where: { id: parseInt(id) }
+      });
+
+      res.status(200).json({ message: 'Item deletado com sucesso.' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erro ao deletar item.' });
+    }
+})
 
 // Iniciar o servidor
 app.listen(3000, () => {
