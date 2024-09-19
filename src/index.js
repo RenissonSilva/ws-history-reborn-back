@@ -8,6 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('Hello, Vercel!');
+});
+
 app.get('/items', async (req, res) => {
     const items = await prisma.item.findMany({})
 
@@ -95,7 +99,9 @@ app.put('/items', async (req, res) => {
     }
 })
 
+const port = process.env.PORT || 3000;
+
 // Iniciar o servidor
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+app.listen(port, () => {
+  console.log('Servidor rodando na porta '+port);
 });
